@@ -29,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
 
     let addr: SocketAddr = ([127, 0, 0, 1], port).into();
     let listener = TcpListener::bind(addr).await?;
-    tracing::info!("{} listening on http://{addr}", domain::service_name());
+    tracing::info!("Notes listening on http://{addr}");
 
     axum::serve(listener, app).await?;
     Ok(())
