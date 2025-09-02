@@ -1,6 +1,9 @@
 use anyhow::{Context, Result};
 use axum::extract::FromRef;
-use sqlx::{PgPool, postgres::PgPoolOptions};
+use sqlx::{
+    PgPool,
+    postgres::{PgConnectOptions, PgPoolOptions},
+};
 use std::time::Duration;
 
 #[derive(Clone)]
@@ -16,10 +19,11 @@ impl FromRef<AppState> for PgPool {
 
 impl AppState {
     pub async fn new(database_url: &str) -> Result<Self> {
+        let opts: PgConnectOptions = database_url.parse()?;
         let db = PgPoolOptions::new()
             .max_connections(5)
             .acquire_timeout(Duration::from_secs(5))
-            .connect(database_url)
+            .connect_with(opts.statement_cache_capacity(0))
             .await
             .with_context(|| format!("failed to connect to Postgres at {}", database_url))?;
 

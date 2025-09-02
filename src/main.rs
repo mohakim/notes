@@ -1,4 +1,9 @@
-use axum::{Router, extract::State, http::StatusCode, routing::get};
+use axum::{
+    Router,
+    extract::State,
+    http::StatusCode,
+    routing::{get, post},
+};
 use dotenvy::dotenv;
 use sqlx::PgPool;
 use std::env;
@@ -6,6 +11,8 @@ use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{EnvFilter, fmt};
+mod error;
+mod notes;
 mod state;
 use state::AppState;
 
@@ -19,6 +26,11 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/health", get(health))
+        .route("/notes", post(notes::create).get(notes::list))
+        .route(
+            "/notes/{id}",
+            get(notes::get).put(notes::update).delete(notes::delete),
+        )
         .with_state(app_state)
         .layer(TraceLayer::new_for_http());
 
